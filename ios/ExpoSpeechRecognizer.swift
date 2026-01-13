@@ -576,31 +576,36 @@ actor ExpoSpeechRecognizer: ObservableObject {
   }
 
   private static func setupAudioSession(_ options: SetCategoryOptions?) throws {
-    let audioSession = AVAudioSession.sharedInstance()
+  let audioSession = AVAudioSession.sharedInstance()
 
-    if let options: SetCategoryOptions {
-      // Convert the array of category options to a bitmask
-      let categoryOptions = options.categoryOptions.reduce(
-        AVAudioSession.CategoryOptions()
-      ) {
-        result, option in
-        result.union(option.avCategoryOption)
-      }
-      try audioSession.setCategory(
-        options.category.avCategory,
-        mode: options.mode.avMode,
-        options: categoryOptions
-      )
-    } else {
-      // Default to playAndRecord with defaultToSpeaker and allowBluetooth
-      try audioSession.setCategory(
-        .playAndRecord,
-        mode: .measurement,
-        options: [.defaultToSpeaker, .allowBluetooth]
-      )
+  if let options: SetCategoryOptions {
+    // Convert the array of category options to a bitmask
+    let categoryOptions = options.categoryOptions.reduce(
+      AVAudioSession.CategoryOptions()
+    ) {
+      result, option in
+      result.union(option.avCategoryOption)
     }
+    try audioSession.setCategory(
+      options.category.avCategory,
+      mode: options.mode.avMode,
+      options: categoryOptions
+    )
+  } else {
+    // Default to playAndRecord with defaultToSpeaker and allowBluetooth
+    try audioSession.setCategory(
+      .playAndRecord,
+      mode: .measurement,
+      options: [.defaultToSpeaker, .allowBluetooth]
+    )
+  }
 
-    try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+  // Enable haptic feedback during audio recording
+  try audioSession.setAllowHapticsAndSystemSoundsDuringRecording(true)
+  
+  try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+}
+
   }
 
   private static func audioInputIsBusy(_ recordingFormat: AVAudioFormat) -> Bool {
